@@ -1,58 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js"></script>
-  <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css" rel="stylesheet" />
+  <meta charset='utf-8' />
+  <title>Create a heatmap layer</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.css' rel='stylesheet' />
   <style>
     body { margin:0; padding:0; }
     #map { position:absolute; top:0; bottom:0; width:100%; }
   </style>
 </head>
-
 <body>
-<div id="map"></div>
+
+
+<div id='map'></div>
 
 <script>
-  mapboxgl.accessToken = "pk.eyJ1IjoiaG9tZWRheS1tYXBzIiwiYSI6ImNqODVrM2VoazBudncycXBsaXpnb2J5MmgifQ.XV9QZlbqaQ7zm_v0W9KEsg";
-
+  mapboxgl.accessToken = 'pk.eyJ1IjoiaG9tZWRheS1tYXBzIiwiYSI6ImNqODVrM2VoazBudncycXBsaXpnb2J5MmgifQ.XV9QZlbqaQ7zm_v0W9KEsg';
   var map = new mapboxgl.Map({
-    container: "map",
-    style: "mapbox://styles/homeday-maps/cjf45xbmi110f2rmigsu8l2o0",
-    zoom:11,
-    center: [13.397640, 52.520637]
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    center: [-120, 50],
+    zoom: 2
   });
 
   map.on('load', function() {
     // Add a geojson point source.
     // Heatmap layers also work with a vector tile source.
-    map.addSource('properties', {
+    map.addSource('earthquakes', {
       "type": "geojson",
-      "data": "props.geojson"
+      "data": "/mapbox-gl-js/assets/earthquakes.geojson"
     });
 
     map.addLayer({
-      "id": "properties-heat",
+      "id": "earthquakes-heat",
       "type": "heatmap",
-      "source": "properties",
-      "maxzoom": 14,
+      "source": "earthquakes",
+      "maxzoom": 9,
       "paint": {
         // Increase the heatmap weight based on frequency and property magnitude
         "heatmap-weight": [
           "interpolate",
           ["linear"],
-          ["get", "price"],
+          ["get", "mag"],
           0, 0,
           6, 1
         ],
-        // Increase the heatmap color weight by zoom level
+        // Increase the heatmap color weight weight by zoom level
         // heatmap-intensity is a multiplier on top of heatmap-weight
         "heatmap-intensity": [
           "interpolate",
           ["linear"],
           ["zoom"],
           0, 1,
-          16, 3
+          9, 3
         ],
         // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
         // Begin color ramp at 0-stop with a 0-transparancy color
@@ -74,7 +76,7 @@
           ["linear"],
           ["zoom"],
           0, 2,
-          16, 20
+          9, 20
         ],
         // Transition from heatmap to circle layer by zoom level
         "heatmap-opacity": [
@@ -82,17 +84,18 @@
           ["linear"],
           ["zoom"],
           7, 1,
-          16, 0
+          9, 0
         ],
       }
-    }, 'water_label');
+    }, 'waterway-label');
 
     map.addLayer({
-      "id": "properties-point",
+      "id": "earthquakes-point",
       "type": "circle",
-      "source": "properties",
-      "minzoom": 13,
+      "source": "earthquakes",
+      "minzoom": 7,
       "paint": {
+        // Size circle radius by earthquake magnitude and zoom level
         "circle-radius": [
           "interpolate",
           ["linear"],
@@ -100,22 +103,23 @@
           7, [
             "interpolate",
             ["linear"],
-            ["get", "price"],
+            ["get", "mag"],
             1, 1,
             6, 4
           ],
           16, [
             "interpolate",
             ["linear"],
-            ["get", "price"],
+            ["get", "mag"],
             1, 5,
-            6, 10
+            6, 50
           ]
         ],
+        // Color circle by earthquake magnitude
         "circle-color": [
           "interpolate",
           ["linear"],
-          ["get", "price"],
+          ["get", "mag"],
           1, "rgba(33,102,172,0)",
           2, "rgb(103,169,207)",
           3, "rgb(209,229,240)",
@@ -134,7 +138,7 @@
           8, 1
         ]
       }
-    }, 'water_label');
+    }, 'waterway-label');
   });
 </script>
 
