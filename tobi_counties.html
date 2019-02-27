@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js"></script>
+  <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body { margin:0; padding:0; }
+    #map { position:absolute; top:0; bottom:0; width:100%; }
+  </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script>
+  mapboxgl.accessToken = "pk.eyJ1IjoiaG9tZWRheS1tYXBzIiwiYSI6ImNqODVrM2VoazBudncycXBsaXpnb2J5MmgifQ.XV9QZlbqaQ7zm_v0W9KEsg";
+
+  var map = new mapboxgl.Map({
+    container: "map",
+    style: "mapbox://styles/homeday-maps/cjs5y0ly720ju1fpeh1qk1y2e",
+
+    zoom:7,
+    center: [13.397640, 52.520637]
+  });
+
+  var hoveredStateId =  null;
+
+  map.on('load', function () {
+      layer_name = 'commission_counties';
+
+      map.addLayer({
+          id: layer_name,
+          type: 'fill',
+          source: {
+              type: 'vector',
+              url: 'mapbox://homeday-maps.8b7yr1fa' // Your Mapbox tileset Map ID
+          },
+          // name of tilesets
+          'source-layer': layer_name,
+          paint: {
+              'fill-color': '#b7c9e8',
+              "fill-opacity": ["case",
+                  ["boolean", ["feature-state", "hover"], false],
+                  1,
+                  0.5
+              ]
+          }
+      });
+
+      map.on("mousemove", layer_name, function(e) {
+          if (e.features.length > 0) {
+              if (hoveredStateId) {
+                  map.setFeatureState({source: layer_name, sourceLayer:layer_name, id: hoveredStateId}, { hover: false});
+              }
+              hoveredStateId = e.features[0].id;
+              map.setFeatureState({source: layer_name, sourceLayer:layer_name, id: hoveredStateId}, { hover: true});
+          }
+      });
+
+      // When the mouse leaves the state-fill layer, update the feature state of the
+      // previously hovered feature.
+      map.on("mouseleave", layer_name, function() {
+          if (hoveredStateId) {
+              map.setFeatureState({source: layer_name, sourceLayer:layer_name, id: hoveredStateId}, { hover: false});
+          }
+          hoveredStateId =  null;
+      });
+  });
+</script>
+
+</body>
+</html>
